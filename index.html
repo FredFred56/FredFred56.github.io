@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fren 个人知识库</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --text:#1f2328; --muted:#6b7280;
+    --accent:#4f6ef7; --border:#e5e7eb; --chip:#eef1f6;
+    --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 14px rgba(0,0,0,.05);
+  }
+  html.dark{
+    --bg:#0f1218; --card:#171c26; --text:#e6e9ef; --muted:#9aa3b2;
+    --accent:#7a92ff; --border:#2a3241; --chip:#232b3a;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;
+  }
+  header{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border)}
+  .header-inner{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px}
+  .logo{font-size:20px;font-weight:700;white-space:nowrap}
+  .logo span{color:var(--accent)}
+  .search-box{flex:1;position:relative}
+  .search-box input{width:100%;padding:9px 14px 9px 36px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-size:14px;outline:none;transition:border-color .2s}
+  .search-box input:focus{border-color:var(--accent)}
+  .search-box::before{content:"\1F50D";position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6}
+  .icon-btn{border:1px solid var(--border);background:var(--card);color:var(--text);width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+  .icon-btn:hover{transform:scale(1.08)}
+  .tags-bar{max-width:960px;margin:0 auto;padding:12px 20px 0;display:flex;gap:8px;flex-wrap:wrap}
+  .tag{padding:6px 14px;border-radius:999px;font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:all .2s;user-select:none}
+  .tag:hover{border-color:var(--accent);color:var(--accent)}
+  .tag.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  main{max-width:960px;margin:0 auto;padding:20px 20px 60px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s,border-color .2s;display:flex;flex-direction:column;gap:8px}
+  .card:hover{transform:translateY(-3px);border-color:var(--accent)}
+  .card .cat{align-self:flex-start;font-size:11px;padding:3px 10px;border-radius:999px;background:var(--chip);color:var(--accent)}
+  .card h3{font-size:16px;line-height:1.4}
+  .card p{font-size:13px;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .card .date{font-size:11px;color:var(--muted);margin-top:auto;padding-top:6px}
+  .empty{text-align:center;color:var(--muted);padding:80px 0;font-size:14px}
+  .modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-body{background:var(--card);border-radius:16px;max-width:720px;width:100%;max-height:85vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal-close{position:sticky;top:0;float:right;border:none;background:var(--chip);color:var(--text);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:15px}
+  .modal-body h2{margin-bottom:6px;line-height:1.4}
+  .modal-meta{font-size:12px;color:var(--muted);margin-bottom:18px}
+  .modal-content{font-size:15px;line-height:1.9;white-space:pre-wrap;word-break:break-word}
+  .modal-content h1,.modal-content h2,.modal-content h3{margin:18px 0 8px;line-height:1.4}
+  .modal-content ul,.modal-content ol{padding-left:22px;margin:8px 0}
+  .modal-content li{margin:4px 0}
+  .modal-content code{background:var(--chip);padding:2px 6px;border-radius:5px;font-size:.9em}
+  .modal-content pre{background:var(--chip);padding:14px;border-radius:10px;overflow-x:auto;margin:10px 0}
+  .modal-content pre code{background:none;padding:0}
+  .modal-content blockquote{border-left:3px solid var(--accent);padding-left:12px;color:var(--muted);margin:10px 0}
+  .modal-content a{color:var(--accent)}
+  .modal-content img{max-width:100%;border-radius:8px}
+  .modal-content kbd{background:var(--chip);border:1px solid var(--border);border-bottom-width:2px;padding:1px 7px;border-radius:5px;font-size:.85em;font-family:inherit}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0;border-top:1px solid var(--border)}
+  @media (max-width:600px){
+    .header-inner{padding:12px 14px;gap:8px}
+    .logo{font-size:17px}
+    main{padding:16px 14px 50px}
+    .grid{grid-template-columns:1fr}
+    .modal-body{padding:20px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">&#128195; Fren<span>知识库</span></div>
+    <div class="search-box"><input id="search" type="search" placeholder="搜索笔记标题、内容…" oninput="render()"></div>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="切换深浅色">&#127769;</button>
+  </div>
+  <div class="tags-bar" id="tagsBar"></div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">没有找到匹配的笔记 &#128584;</div>
+</main>
+
+<footer>Fren 个人知识库 · Powered by GitHub Pages</footer>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-body">
+    <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    <h2 id="mTitle"></h2>
+    <div class="modal-meta" id="mMeta"></div>
+    <div class="modal-content" id="mContent"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   笔记数据区 —— 更新笔记只需让 AI 修改这个数组
+   字段：id / title / cat / date / desc(摘要,可留空) / body(支持Markdown)
+   body 里用 <kbd>键名</kbd> 显示按键样式，![]() 插入图片
+   ============================================================ */
+const NOTES = [
+  {
+    id: 1,
+    title: "Plasticity 快捷键总览（原图）",
+    cat: "Plasticity",
+    date: "2026-09-23",
+    desc: "PS 整理的原版快捷键大图，所有笔记的出处。",
+    body: "![Plasticity 快捷键总览](plasticity-cheatsheet.png)\n\n> 上图是 PS 整理的原版笔记。下方的分类笔记都是从这张图拆解出来的，方便搜索和查阅。"
+  },
+  {
+    id: 2,
+    title: "视图操作与基础控制",
+    cat: "Plasticity",
+    date: "2026-09-23",
+    desc: "旋转/平移/缩放视图、居中物体、切换正交透视、模式切换。",
+    body: "## 视图操作\n\n- <kbd>中键</kbd> 旋转视图\n- <kbd>Shift</kbd>+<kbd>中键</kbd> 平移视图\n- <kbd>滚轮</kbd> 缩放视图\n- <kbd>Alt</kbd>+<kbd>中键</kbd> 旋转时进入正交视图\n- <kbd>5</kbd>（小键盘）切换正交视图 / 透视视图\n\n> 首选项中可以把视图操作切换为 **Blender 视图操作模式**。\n\n## 选择与居中\n\n- <kbd>鼠标左键</kbd> 选择\n- <kbd>/</kbd>（小键盘除号）让选中物体居中视图显示\n- <kbd>?</kbd> 放大聚焦选中的物体\n\n## 模式切换\n\n- <kbd>1</kbd> 点模式\n- <kbd>2</kbd> 线模式\n- <kbd>3</kbd> 面模式\n- <kbd>4</kbd> 几何体模式\n- <kbd>5</kbd> / <kbd>Tab</kbd> 综合选择模式"
+  },
+  {
+    id: 3,
+    title: "G 键移动与对齐技巧",
+    cat: "Plasticity",
+    date: "2026-09-23",
+    desc: "G+G 视口移动、G+F 基点对齐、质心回归原点、R 旋转。",
+    body: "## 移动模型\n\n- <kbd>G</kbd> 移动模型\n- <kbd>G</kbd>+<kbd>G</kbd> 按屏幕视口空间移动\n- <kbd>R</kbd> 旋转模型\n\n## G+F 系列对齐操作\n\n- <kbd>G</kbd> → <kbd>F</kbd> → **左键单击**：选择任意一点作为基点去移动对齐\n- <kbd>G</kbd> → <kbd>F</kbd> → **右键单击**：以物体质心点为基点进行移动对齐\n- <kbd>G</kbd> → <kbd>F</kbd> → **右键双击**：使物体质心回归世界原点"
+  },
+  {
+    id: 4,
+    title: "曲线操作大全",
+    cat: "Plasticity",
+    date: "2026-09-23",
+    desc: "生成曲线、加点删点、合并拆分、曲线偏移、重复上一步。",
+    body: "## 生成与编辑曲线\n\n- 生成曲线后**按住绿点**控制线段形变\n- <kbd>Shift</kbd>+<kbd>S</kbd> 增加控制点\n- <kbd>X</kbd> 删除\n- 可切换**样条曲线 / 控制点曲线**两种点模式\n\n## 曲线的合并与拆分\n\n1. 先将两条线段**首尾点对齐**\n2. 按 <kbd>G</kbd> 呼出移动工具，再按 <kbd>F</kbd> 自由选择其中一条曲线的首点为基点，移动到另一条曲线的尾点完成吸附\n3. 选中两条曲线：<kbd>J</kbd> 合并，<kbd>Alt</kbd>+<kbd>J</kbd> 拆分\n\n> <kbd>Alt</kbd>+<kbd>J</kbd> 可以拆分炸开多种线段和模型。\n\n## 曲线偏移（类似内插面）\n\n- 选择曲线按 <kbd>O</kbd> 进行曲线偏移\n- 再按 <kbd>Tab</kbd> 可以进行曲线双偏移\n- <kbd>回车</kbd> 确定操作\n- 可选**圆角偏移**或**线性偏移**\n\n## 其他\n\n- <kbd>Shift</kbd>+<kbd>R</kbd> 重复上一个步骤"
+  },
+  {
+    id: 5,
+    title: "曲线切割实体与曲线投射",
+    cat: "Plasticity",
+    date: "2026-09-23",
+    desc: "用圆形切割正方体、Shift+I 曲线投射到模型并切割。",
+    body: "## 曲线切割实体\n\n**例：圆形切割正方体**\n\n1. 转到正视图，把圆形移动到想要的位置\n2. 先选择正方体，再按 <kbd>C</kbd> 键，然后点击圆形\n3. 最后按 <kbd>回车</kbd> 或**右键点击**完成\n\n## 曲线投射\n\n1. 选择圆形曲线（线模式），按 <kbd>Shift</kbd>+<kbd>I</kbd>\n2. 点击要投射的模型，曲线就会投射到模型上\n3. 此工具会**把原模型切割**\n\n> 如果只按 <kbd>I</kbd> 键，则只创建一条投影曲线或直线出来，不切割模型。"
+  },
+  {
+    id: 6,
+    title: "布尔操作",
+    cat: "Plasticity",
+    date: "2026-09-23",
+    desc: "Q 键布尔、差集/并集/交集、Shift+Q 切片、批量布尔。",
+    body: "- 选中要布尔的物体，按 <kbd>Q</kbd> 键进行布尔操作\n- **差集 / 并集 / 交集** 三种模式\n- <kbd>Shift</kbd>+<kbd>Q</kbd> 切片\n- 布尔完成之前按 <kbd>T</kbd> 键可以保留工具继续调整\n- 支持**批量布尔**，物体可连续操作"
+  },
+  {
+    id: 7,
+    title: "镜像工具与显示隐藏",
+    cat: "Plasticity",
+    date: "2026-09-23",
+    desc: "世界原点镜像、自由镜像、H 系列显示隐藏快捷键。",
+    body: "## 镜像工具\n\n1. **根据世界原点镜像**：世界原点会出现对称轴，沿对称轴进行镜像\n2. **自由镜像**：选择镜像物体后，随意画一条对称轴进行镜像\n\n## 显示与隐藏\n\n- <kbd>H</kbd> 隐藏物体\n- <kbd>Alt</kbd>+<kbd>H</kbd> 显示\n- <kbd>Shift</kbd>+<kbd>H</kbd> 孤立显示（只看选中）\n- <kbd>Ctrl</kbd>+<kbd>H</kbd> 反选隐藏"
+  }
+];
+
+/* ================= 以下为界面逻辑（无需修改） ================= */
+let activeCat = "全部";
+let dark = localStorage.getItem("notes-theme") === "dark";
+if (dark) { document.documentElement.classList.add("dark"); }
+
+function toggleTheme() {
+  dark = !dark;
+  document.documentElement.classList.toggle("dark", dark);
+  localStorage.setItem("notes-theme", dark ? "dark" : "light");
+  document.getElementById("themeBtn").innerHTML = dark ? "\u2600\uFE0F" : "\uD83C\uDF19";
+}
+document.getElementById("themeBtn").innerHTML = dark ? "\u2600\uFE0F" : "\uD83C\uDF19";
+
+function md(src) {
+  let s = src.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const blocks = [];
+  s = s.replace(/```([\s\S]*?)```/g, function(m, c){ blocks.push("<pre><code>" + c.trim() + "</code></pre>"); return "@@CB" + (blocks.length-1) + "@@"; });
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" style="max-width:100%;border-radius:8px">');
+  s = s.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+  s = s.replace(/^###### (.*)$/gm, "<h6>$1</h6>").replace(/^##### (.*)$/gm, "<h5>$1</h5>")
+       .replace(/^#### (.*)$/gm, "<h4>$1</h4>").replace(/^### (.*)$/gm, "<h3>$1</h3>")
+       .replace(/^## (.*)$/gm, "<h2>$1</h2>").replace(/^# (.*)$/gm, "<h1>$1</h1>");
+  s = s.replace(/^&gt; (.*)$/gm, "<blockquote>$1</blockquote>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  s = s.replace(/^\d+\. (.*)$/gm, "<li>$1</li>").replace(/^\- (.*)$/gm, "<li>$1</li>");
+  s = s.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, "<ul>$1</ul>").replace(/<\/ul>\s*<ul>/g, "");
+  s = s.replace(/\n{2,}/g, "<br><br>").replace(/\n/g, "<br>");
+  s = s.replace(/@@CB(\d+)@@/g, function(m, i){ return blocks[+i]; });
+  return s;
+}
+
+function renderTags() {
+  const cats = ["全部"].concat(Array.from(new Set(NOTES.map(function(n){ return n.cat; }))));
+  document.getElementById("tagsBar").innerHTML = cats.map(function(c){
+    return '<div class="tag ' + (c === activeCat ? "active" : "") + '" onclick="activeCat=\'' + c + '\';render();renderTags()">' + c + '</div>';
+  }).join("");
+}
+
+function render() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const list = NOTES
+    .filter(function(n){ return activeCat === "全部" || n.cat === activeCat; })
+    .filter(function(n){ return !q || (n.title + n.body + n.desc).toLowerCase().indexOf(q) > -1; })
+    .sort(function(a, b){ return b.date.localeCompare(a.date); });
+  document.getElementById("empty").style.display = list.length ? "none" : "block";
+  document.getElementById("grid").innerHTML = list.map(function(n){
+    return '<div class="card" onclick="openModal(' + n.id + ')">'
+      + '<div class="cat">' + n.cat + '</div>'
+      + '<h3>' + n.title + '</h3>'
+      + '<p>' + (n.desc || n.body.replace(/[#*`>\-!]/g, "").slice(0, 80)) + '…</p>'
+      + '<div class="date">&#128197; ' + n.date + '</div></div>';
+  }).join("");
+}
+
+function openModal(id) {
+  const n = NOTES.find(function(x){ return x.id === id; });
+  document.getElementById("mTitle").textContent = n.title;
+  document.getElementById("mMeta").textContent = n.cat + " · " + n.date;
+  document.getElementById("mContent").innerHTML = md(n.body);
+  document.getElementById("modal").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeModal(); });
+
+renderTags();
+render();
+</script>
+</body>
+</html>
